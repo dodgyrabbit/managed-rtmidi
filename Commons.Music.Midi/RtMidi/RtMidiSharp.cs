@@ -6,7 +6,6 @@ using RtMidiPtr = System.IntPtr;
 using RtMidiInPtr = System.IntPtr;
 using RtMidiOutPtr = System.IntPtr;
 
-
 namespace Commons.Music.Midi.RtMidi
 {
 	/// <summary>

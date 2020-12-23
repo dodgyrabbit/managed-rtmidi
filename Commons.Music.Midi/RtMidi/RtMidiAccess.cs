@@ -7,59 +7,85 @@ namespace Commons.Music.Midi.RtMidi
 {
 	public class RtMidiAccess : IMidiAccess2
 	{
+		public event EventHandler<MidiConnectionEventArgs> StateChanged;
+
+		public MidiAccessExtensionManager ExtensionManager { get; private set; }
+
+		public RtMidiAccess()
+		{
+			ExtensionManager = new RtMidiAccessExtensionManager(this);
+		}
+
+		public IEnumerable<IMidiPortDetails> Inputs
+		{
+			get { return MidiDeviceManager.AllDevices.Where(d => d.IsInput).Select(d => new RtMidiPortDetails(d)); }
+		}
+
+		public IEnumerable<IMidiPortDetails> Outputs
+		{
+			get { return MidiDeviceManager.AllDevices.Where(d => d.IsOutput).Select(d => new RtMidiPortDetails(d)); }
+		}
+
+		public Task<IMidiInput> OpenInputAsync(string portId)
+		{
+			var p = new RtMidiInput((RtMidiPortDetails) Inputs.First(i => i.Id == portId));
+			return p.OpenAsync().ContinueWith(t => (IMidiInput) p);
+		}
+
+		public Task<IMidiOutput> OpenOutputAsync(string portId)
+		{
+			var p = new RtMidiOutput((RtMidiPortDetails) Outputs.First(i => i.Id == portId));
+			return p.OpenAsync().ContinueWith(t => (IMidiOutput) p);
+		}
+
 		class RtMidiAccessExtensionManager : MidiAccessExtensionManager
 		{
 			RtMidiPortCreatorExtension port_creator;
 
-			public RtMidiAccessExtensionManager (RtMidiAccess access)
+			public RtMidiAccessExtensionManager(RtMidiAccess access)
 			{
 				Access = access;
-				port_creator = new RtMidiPortCreatorExtension (this);
+				port_creator = new RtMidiPortCreatorExtension(this);
 			}
-			
+
 			public RtMidiAccess Access { get; private set; }
 
-			public override T GetInstance<T> ()
+			public override T GetInstance<T>()
 			{
-				if (typeof (T) == typeof (MidiPortCreatorExtension))
+				if (typeof(T) == typeof(MidiPortCreatorExtension))
+				{
 					return (T) (object) port_creator;
+				}
+
 				return null;
 			}
 		}
-		
+
 		class RtMidiPortCreatorExtension : MidiPortCreatorExtension
 		{
 			RtMidiAccessExtensionManager manager;
-			
-			public RtMidiPortCreatorExtension (RtMidiAccessExtensionManager extensionManager)
+
+			public RtMidiPortCreatorExtension(RtMidiAccessExtensionManager extensionManager)
 			{
 				manager = extensionManager;
 			}
 
-			public override IMidiOutput CreateVirtualInputSender (PortCreatorContext context)
+			public override IMidiOutput CreateVirtualInputSender(PortCreatorContext context)
 			{
-				RtMidiOutputDevice output = new RtMidiOutputDevice(RtMidiApi.Unspecified, "C#");
-				output.OpenVirtualPort(context.PortName);
-					
-			   // var seq = new AlsaSequencer (AlsaIOType.Duplex, AlsaIOMode.NonBlocking);
-				// var portNumber = seq.CreateSimplePort (
-				// 	context.PortName ?? "managed-midi virtual in",
-				// 	AlsaMidiAccess.virtual_input_connected_cap,
-				// 	AlsaMidiAccess.midi_port_type);
-				//
-				// seq.SetClientName (context.ApplicationName ?? "managed-midi input port creator");
-				// var port = seq.GetPort (seq.CurrentClientId, portNumber);
+				RtMidiOutputDevice output =
+					new RtMidiOutputDevice(RtMidiApi.Unspecified, context.ApplicationName ?? "managed-rtmidi");
+				output.OpenVirtualPort(context.PortName ?? "managed-rtmidi virtual input");
 
-				 var details = new RtMidiPortDetails (MidiDeviceManager.GetDeviceInfo(output.PortCount));
-				 
-				//return new SimpleVirtualMidiOutput (details, () => seq.DeleteSimplePort (portNumber)) { OnSend = send };
+				// TODO: Review if output.PortCount is in fact the correct object
+				var details = new RtMidiPortDetails(MidiDeviceManager.GetDeviceInfo(output.PortCount));
+
 				return new SimpleVirtualMidiOutput(details, () => output.Dispose())
 				{
 					OnSend = (buffer, index, length, timestamp) => output.SendMessage(buffer, length)
 				};
 			}
 
-			public override IMidiInput CreateVirtualOutputReceiver (PortCreatorContext context)
+			public override IMidiInput CreateVirtualOutputReceiver(PortCreatorContext context)
 			{
 				throw new NotImplementedException();
 				// var seq = new AlsaSequencer (AlsaIOType.Duplex, AlsaIOMode.NonBlocking);
@@ -73,33 +99,5 @@ namespace Commons.Music.Midi.RtMidi
 				// return new SimpleVirtualMidiInput (details, () => seq.DeleteSimplePort (portNumber));
 			}
 		}
-		
-		public RtMidiAccess()
-		{
-			ExtensionManager = new RtMidiAccessExtensionManager (this);
-		}
-		public IEnumerable<IMidiPortDetails> Inputs {
-			get { return MidiDeviceManager.AllDevices.Where (d => d.IsInput).Select (d => new RtMidiPortDetails (d)); }
-		}
-
-		public IEnumerable<IMidiPortDetails> Outputs {
-			get { return MidiDeviceManager.AllDevices.Where (d => d.IsOutput).Select (d => new RtMidiPortDetails (d)); }
-		}
-		
-		public Task<IMidiInput> OpenInputAsync (string portId)
-		{
-			var p = new RtMidiInput ((RtMidiPortDetails) Inputs.First (i => i.Id == portId));
-			return p.OpenAsync ().ContinueWith (t => (IMidiInput) p);
-		}
-		
-		public Task<IMidiOutput> OpenOutputAsync (string portId)
-		{
-			var p = new RtMidiOutput ((RtMidiPortDetails) Outputs.First (i => i.Id == portId));
-			return p.OpenAsync ().ContinueWith (t => (IMidiOutput) p);
-		}
-
-		public event EventHandler<MidiConnectionEventArgs> StateChanged;
-		
-		public MidiAccessExtensionManager ExtensionManager { get; private set; }
 	}
 }
