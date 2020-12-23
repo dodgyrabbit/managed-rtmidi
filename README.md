@@ -8,6 +8,9 @@ This is a much more simplified version of that work, that specifically targets r
 * Works on 32 and 64 bit CPUs
 * Supports virtual output port on rtmidi
 * More comments and documentation in the code to understand what's going on
+* Classes refactored into seperate files, various coding standard changes
+
+For the most part, the code is still "compatible" with the abstractions in managed-midi.
 
 ## Prerequisites
 You need rtmidi on your system.
