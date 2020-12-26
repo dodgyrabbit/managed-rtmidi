@@ -58,21 +58,22 @@ namespace midi_filter
                     // Is it a status byte?
                     if ((statusByte & 0xF0) > 0)
                     {
-                        // Note on
-                        if (statusByte == 0x90)
+                        MidiEventType eventType = MidiEvent.GetEventType(statusByte);
+                        if (eventType == MidiEventType.NoteOn || eventType == MidiEventType.NoteOff)
                         {
-                            // Ensure we have the 3rd value (should always be true)
-                            if (e.Length >= 2)
+                            var note = new NoteMidiEvent(DateTime.UtcNow, statusByte, e.Data[1], e.Data[2]);
+                            if (note.IsNoteOn && note.Velocity == 0)
                             {
-                                byte velocity = e.Data[2];
-                                if (velocity == 0)
+                                if (isVerbose)
                                 {
-                                    if (isVerbose)
-                                    {
-                                        Console.WriteLine("Removing 0 velocity note off");
-                                    }
-                                    return;
+                                    Console.WriteLine("Removing 0 velocity note off");
                                 }
+                                return;
+                            }
+
+                            if (isVerbose)
+                            {
+                                Console.WriteLine($"{note.SPN} at velocity {note.Velocity} on channel {note.Channel} is {note.IsNoteOn}");
                             }
                         }
                     }
