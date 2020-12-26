@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
-using Google.Cloud.PubSub.V1;
+using Dodgyrabbit.Google.Cloud.PubSub.V1;
 
 namespace midi_cloud
 {
@@ -8,18 +10,23 @@ namespace midi_cloud
     {
         static async Task Main(string[] args)
         {
-            string projectId = "";
-            string topicId = "";
-            
-            // The environment variable is required for specifying service account details
-            //export GOOGLE_APPLICATION_CREDENTIALS=<path-to-json-file>
-            
-            PublisherClient publisher = await PublisherClient.CreateAsync(new TopicName(projectId, topicId));
-            string messageId = await publisher.PublishAsync("Hello, Pubsub");
-            
-            // PublisherClient instance should be shutdown after use.
-            // The TimeSpan specifies for how long to attempt to publish locally queued messages.
-            await publisher.ShutdownAsync(TimeSpan.FromSeconds(15));
+            string ServiceAccountCredentialFile = "";
+
+            PublisherClient publisherClient = new PublisherClient("cloud-piano", "notes", ServiceAccountCredentialFile);
+            PubSubPublishParameters parameters = new PubSubPublishParameters();
+            parameters.Messages = new List<PubSubMessage>();
+
+            for (int i = 0; i < 1; i++)
+            {
+                var pubSubMessage = new PubSubMessage();
+                pubSubMessage.Data = Convert.ToBase64String(Encoding.UTF8.GetBytes($"Message={i}"));
+                parameters.Messages.Add(pubSubMessage);
+            }
+
+            await publisherClient.PublishAsync(parameters);
+
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
         }
     }
 }
