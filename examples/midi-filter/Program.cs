@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Commons.Music.Midi;
 
@@ -15,6 +17,10 @@ namespace midi_filter
         {
             var access = MidiAccessManager.Default;
             bool isVerbose = true;
+
+            var channel = Channel.CreateUnbounded<MidiEvent>();
+            var reader = channel.Reader;
+            var writer = channel.Writer;
 
             Console.WriteLine("MIDI input devices:");
             foreach (var inputDevice in access.Inputs)
@@ -38,9 +44,26 @@ namespace midi_filter
             var portCreator = access.ExtensionManager.GetInstance<MidiPortCreatorExtension> ();
             var sender = portCreator.CreateVirtualInputSender(new MidiPortCreatorExtension.PortCreatorContext() {PortName = "Filtered Output"});
 
+            var uploadBatchTime = TimeSpan.FromSeconds(1);
+            var consumer = Task.Run(async () =>
+            {
+                while (await reader.WaitToReadAsync())
+                {
+                    List<MidiEvent> midiEvents = new List<MidiEvent>();
+
+                    MidiEvent midiEvent;
+                    while (reader.TryRead(out midiEvent))
+                    {
+                        midiEvents.Add(midiEvent);
+                    }
+                    Console.WriteLine($"Uploading: {midiEvents.Count} events");
+                    await Task.Delay(uploadBatchTime);
+                }
+            });
+
             Task.Run(async () =>
             {
-                input.MessageReceived += (obj, e) =>
+                input.MessageReceived += async (obj, e) =>
                 {
                     // MIDI message format
                     // byte 0 = status byte
@@ -75,6 +98,8 @@ namespace midi_filter
                             {
                                 Console.WriteLine($"{note.SPN} at velocity {note.Velocity} on channel {note.Channel} is {note.IsNoteOn}");
                             }
+
+                            await writer.WriteAsync(note);
                         }
                     }
                     if (isVerbose)
@@ -90,8 +115,12 @@ namespace midi_filter
                 };
                 Console.WriteLine("Press <Ctrl>+c to exit...");
                 await Task.Delay(int.MaxValue);
+                channel.Writer.Complete();
 
             }).Wait();
+
+            await consumer;
+            Console.WriteLine("Consumer exited");    
 
             await input.CloseAsync();
         }
