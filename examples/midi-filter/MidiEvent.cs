@@ -24,7 +24,7 @@ namespace midi_filter
             return (MidiEventType) status;
         }
 
-        DateTime DateTime => dateTime;
+        public DateTime DateTime => dateTime;
     }
 }
 

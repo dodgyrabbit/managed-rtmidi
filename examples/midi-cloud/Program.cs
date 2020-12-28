@@ -8,10 +8,18 @@ namespace midi_cloud
 {
     class Program
     {
+        static string ServiceAccountCredentialFile = "";
+        
         static async Task Main(string[] args)
         {
-            string ServiceAccountCredentialFile = "";
+            await PublishAsync();
 
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+        }
+
+        static async Task PublishAsync()
+        {
             PublisherClient publisherClient = new PublisherClient("cloud-piano", "notes", ServiceAccountCredentialFile);
             PubSubPublishParameters parameters = new PubSubPublishParameters();
             parameters.Messages = new List<PubSubMessage>();
@@ -24,9 +32,6 @@ namespace midi_cloud
             }
 
             await publisherClient.PublishAsync(parameters);
-
-            Console.WriteLine("Press any key to continue...");
-            Console.ReadKey();
         }
     }
 }

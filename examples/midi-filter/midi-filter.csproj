@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Commons.Music.Midi\managed-rtmidi.csproj" />
+    <ProjectReference Include="..\..\Dodgyrabbit.Google.Cloud.PubSub.V1\Dodgyrabbit.Google.Cloud.PubSub.V1.csproj" />
   </ItemGroup>
 
 </Project>

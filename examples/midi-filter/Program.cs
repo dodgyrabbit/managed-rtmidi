@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Commons.Music.Midi;
+using System.Text.Json;
+using Dodgyrabbit.Google.Cloud.PubSub.V1;
 
 namespace midi_filter
 {
@@ -12,10 +15,17 @@ namespace midi_filter
     {
         // Search for a midi input device containing this string. This sample looks for the Virtual MIDI Piano Keyboard.
         const string MidiInputDeviceName = "VMPK Output";
+        
+        static JsonSerializerOptions serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = false,
+            IgnoreNullValues = true
+        };
 
         static async Task Main(string[] args)
         {
             var access = MidiAccessManager.Default;
+            var pubSub = new PublisherClient("cloud-piano", "notes", "");
             bool isVerbose = true;
 
             var channel = Channel.CreateUnbounded<MidiEvent>();
@@ -43,20 +53,42 @@ namespace midi_filter
             
             var portCreator = access.ExtensionManager.GetInstance<MidiPortCreatorExtension> ();
             var sender = portCreator.CreateVirtualInputSender(new MidiPortCreatorExtension.PortCreatorContext() {PortName = "Filtered Output"});
-
             var uploadBatchTime = TimeSpan.FromSeconds(1);
+            
+            PubSubPublishParameters parameters = new PubSubPublishParameters();
+            parameters.Messages = new List<PubSubMessage>();
+            
             var consumer = Task.Run(async () =>
             {
                 while (await reader.WaitToReadAsync())
                 {
-                    List<MidiEvent> midiEvents = new List<MidiEvent>();
-
+                    parameters.Messages.Clear();
                     MidiEvent midiEvent;
                     while (reader.TryRead(out midiEvent))
                     {
-                        midiEvents.Add(midiEvent);
+                        NoteMidiEvent note = midiEvent as NoteMidiEvent;
+                        if (note is not null)
+                        {
+                            var message = new PubSubMessage();
+                            var serializedValue = JsonSerializer.Serialize(note, serializerOptions);
+                            message.Data = Convert.ToBase64String(Encoding.UTF8.GetBytes(serializedValue));
+                            parameters.Messages.Add(message);
+                        }
                     }
-                    Console.WriteLine($"Uploading: {midiEvents.Count} events");
+                    if (parameters.Messages.Count > 0)
+                    {
+                        Console.WriteLine($"Uploading: {parameters.Messages.Count} MIDI events");
+
+                        if (await pubSub.PublishAsync(parameters))
+                        {
+                            Console.WriteLine("Success.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Fail.");
+                        }
+                    }
+
                     await Task.Delay(uploadBatchTime);
                 }
             });
