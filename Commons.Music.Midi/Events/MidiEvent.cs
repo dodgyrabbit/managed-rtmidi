@@ -5,7 +5,11 @@ namespace midi_filter
     public abstract class MidiEvent
     {
         DateTime dateTime;
-        protected MidiEventType midiEventType; 
+        protected MidiEventType midiEventType;
+
+        public MidiEvent()
+        {
+        }
 
         public MidiEvent(DateTime dateTime, MidiEventType midiEventType)
         {
@@ -13,9 +17,17 @@ namespace midi_filter
             this.midiEventType = midiEventType;
         }
 
-        public DateTime DateTime => dateTime;
+        public DateTime DateTime
+        {
+            get => dateTime;
+            set => dateTime = value;
+        }
 
-        public MidiEventType MidiEventType => midiEventType;
+        public MidiEventType MidiEventType
+        {
+            get => midiEventType;
+            set => midiEventType = value;
+        }
 
         public static MidiEventType ToMidiEventType(byte status)
         {

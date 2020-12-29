@@ -8,6 +8,10 @@ namespace midi_filter
         byte velocity;
         byte note;
 
+        public NoteMidiEvent()
+        {
+        }
+
         public NoteMidiEvent(DateTime dateTime, MidiEventType midiEventType, byte channel, byte note, byte velocity) : base (dateTime, midiEventType, channel)
         {
             this.note = note;
@@ -22,12 +26,20 @@ namespace midi_filter
         /// <summary>
         /// The note velocity from 0 to 255.
         /// </summary>
-        public byte Velocity => velocity;
+        public byte Velocity
+        {
+            get => velocity;
+            set => velocity = value;
+        }
 
         /// <summary>
         /// The note value from 0 to 127. 0 is C-2, 60 is C3 (middle C).
         /// </summary>
-        public byte Note => note;
+        public byte Note
+        {
+            get => note;
+            set => note = value;
+        }
         
         /// <summary>
         /// Scientific Pitch Notation. For example, Middle C is "C3".

@@ -5,13 +5,21 @@ namespace midi_filter
     public class ChannelMidiEvent : MidiEvent
     {
         protected byte channel;
+
+        public ChannelMidiEvent()
+        {
+        }
         
         public ChannelMidiEvent(DateTime dateTime, MidiEventType midiEventType, byte channel) : base(dateTime, midiEventType)
         {
             this.channel = channel;
         }
 
-        public byte Channel => channel;
+        public byte Channel
+        {
+            get => channel;
+            set => channel = value;
+        }
 
         public static byte ToChannel(byte status)
         {
