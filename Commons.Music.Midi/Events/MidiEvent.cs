@@ -5,17 +5,19 @@ namespace midi_filter
     public abstract class MidiEvent
     {
         DateTime dateTime;
-        protected byte status;
         protected MidiEventType midiEventType; 
 
-        public MidiEvent(DateTime dateTime, byte status)
+        public MidiEvent(DateTime dateTime, MidiEventType midiEventType)
         {
             this.dateTime = dateTime;
-            this.status = status;
-            midiEventType = GetEventType(status);
+            this.midiEventType = midiEventType;
         }
 
-        public static MidiEventType GetEventType(byte status)
+        public DateTime DateTime => dateTime;
+
+        public MidiEventType MidiEventType => midiEventType;
+
+        public static MidiEventType ToMidiEventType(byte status)
         {
             if ((status >= 0x80) && (status < 0xF0))
             {
@@ -23,8 +25,6 @@ namespace midi_filter
             }
             return (MidiEventType) status;
         }
-
-        public DateTime DateTime => dateTime;
     }
 }
 

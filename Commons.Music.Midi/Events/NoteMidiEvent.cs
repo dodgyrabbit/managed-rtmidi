@@ -8,7 +8,7 @@ namespace midi_filter
         byte velocity;
         byte note;
 
-        public NoteMidiEvent(DateTime dateTime, byte status, byte note, byte velocity) : base (dateTime, status)
+        public NoteMidiEvent(DateTime dateTime, MidiEventType midiEventType, byte channel, byte note, byte velocity) : base (dateTime, midiEventType, channel)
         {
             this.note = note;
             this.velocity = velocity;

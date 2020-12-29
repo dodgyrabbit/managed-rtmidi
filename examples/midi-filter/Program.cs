@@ -113,10 +113,10 @@ namespace midi_filter
                     // Is it a status byte?
                     if ((statusByte & 0xF0) > 0)
                     {
-                        MidiEventType eventType = MidiEvent.GetEventType(statusByte);
+                        MidiEventType eventType = MidiEvent.ToMidiEventType(statusByte);
                         if (eventType == MidiEventType.NoteOn || eventType == MidiEventType.NoteOff)
                         {
-                            var note = new NoteMidiEvent(DateTime.UtcNow, statusByte, e.Data[1], e.Data[2]);
+                            var note = new NoteMidiEvent(DateTime.UtcNow, MidiEvent.ToMidiEventType(statusByte), ChannelMidiEvent.ToChannel(statusByte),e.Data[1], e.Data[2]);
                             if (note.IsNoteOn && note.Velocity == 0)
                             {
                                 if (isVerbose)
