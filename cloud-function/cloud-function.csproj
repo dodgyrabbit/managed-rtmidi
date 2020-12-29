@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Cloud.BigQuery.V2" Version="2.1.0" />
+    <PackageReference Include="Google.Cloud.Functions.Hosting" Version="1.0.0-beta04" />
+    <PackageReference Include="Google.Cloud.PubSub.V1" Version="2.2.0" />
+    <PackageReference Include="Google.Events.Protobuf" Version="1.0.0-beta02" />
+  </ItemGroup>
+
+  <!-- IMPORTANT: These files need to be copied to the Cloud function and removed from here -->
+  <ItemGroup>
+    <Compile Include="..\Commons.Music.Midi\Events\ChannelMidiEvent.cs">
+      <Link>ChannelMidiEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\Commons.Music.Midi\Events\MidiEvent.cs">
+      <Link>MidiEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\Commons.Music.Midi\Events\MidiEventType.cs">
+      <Link>MidiEventType.cs</Link>
+    </Compile>
+    <Compile Include="..\Commons.Music.Midi\Events\NoteMidiEvent.cs">
+      <Link>NoteMidiEvent.cs</Link>
+    </Compile>
+  </ItemGroup>
+</Project>
