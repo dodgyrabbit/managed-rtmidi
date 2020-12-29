@@ -13,8 +13,8 @@ namespace midi_filter
 {
     class Program
     {
-        // Search for a midi input device containing this string. This sample looks for the Virtual MIDI Piano Keyboard.
-        const string MidiInputDeviceName = "VMPK Output";
+        // Search for a midi input device containing this string
+        static string[] MidiInputDeviceNames = {"VMPK Output", "mio"};
         
         static JsonSerializerOptions serializerOptions = new JsonSerializerOptions
         {
@@ -38,7 +38,7 @@ namespace midi_filter
                 Console.WriteLine(inputDevice.Name);
             }
             
-            var midiPort = access.Inputs.FirstOrDefault(input => input.Name.Contains(MidiInputDeviceName, StringComparison.OrdinalIgnoreCase));
+            var midiPort = access.Inputs.FirstOrDefault(input => Array.Exists(MidiInputDeviceNames, deviceName => input.Name.Contains(deviceName, StringComparison.OrdinalIgnoreCase)));
             IMidiInput input = null;
             if (midiPort != null)
             {
@@ -88,7 +88,6 @@ namespace midi_filter
                             Console.WriteLine("Fail.");
                         }
                     }
-
                     await Task.Delay(uploadBatchTime);
                 }
             });
