@@ -127,10 +127,13 @@ namespace midi_filter
                     }
 
                     // If we're not busy cancelling, wait for the next upload slot. Otherwise loop and upload until
-                    // we're done. This effectively means we're draining the queue without waiting.
-                    if (!cts.IsCancellationRequested)
+                    // we're done. This effectively means we're draining the queue without waiting when cancelling.
+                    try
                     {
-                        await Task.Delay(uploadInterval);
+                        await Task.Delay(uploadInterval, cts.Token);
+                    }
+                    catch (TaskCanceledException)
+                    {
                     }
                 }
                 Console.WriteLine("Writer task exiting");
