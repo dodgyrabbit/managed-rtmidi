@@ -17,7 +17,7 @@ namespace Dodgyrabbit.Google.Cloud.PubSub.V1
     /// A lightweight REST based PubSub publisher client, modelled very loosely on the official grpc based version
     /// by Google.
     /// </summary>
-    public class PublisherClient
+    public class PublisherClient : IPublisherClient
     {
         Uri uri;
         TokenResponse token;
@@ -25,10 +25,10 @@ namespace Dodgyrabbit.Google.Cloud.PubSub.V1
         ServiceAccountCredential credential;
         readonly JsonSerializerOptions serializerOptions;
         
-        public PublisherClient(string projectId, string topic, string serviceAccountCredentialFile)
+        public PublisherClient(string projectId, string topicId, string serviceAccountCredentialFile)
         {
             // Setup URI and Accept headers once 
-            uri = new Uri($"https://pubsub.googleapis.com/v1/projects/{projectId}/topics/{topic}:publish");
+            uri = new Uri($"https://pubsub.googleapis.com/v1/projects/{projectId}/topics/{topicId}:publish");
             client.DefaultRequestHeaders.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json"));
             
             using (var stream = new FileStream(serviceAccountCredentialFile, FileMode.Open, FileAccess.Read))
