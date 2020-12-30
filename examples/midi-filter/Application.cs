@@ -24,6 +24,7 @@ namespace midi_filter
         string serviceCredentialsFileName;
         int batchSize;
         TimeSpan uploadInterval;
+        IMidiAccess2 access;
 
         /// <summary>
         /// Creates a new Application instance.
@@ -33,18 +34,30 @@ namespace midi_filter
         /// <param name="topicId">The PubSub topic to publish to.</param>
         /// <param name="batchSize">The maximum number of MIDI messages per PubSub message.</param>
         /// <param name="uploadIntervalMilliseconds">The interval to publish to PubSub.</param>
-        public Application(string serviceCredentialsFileName, string projectId, string topicId, int batchSize = 10, long uploadIntervalMilliseconds = 5000)
+        public Application(string serviceCredentialsFileName, string projectId, string topicId, IMidiAccess2 access, int batchSize = 10, long uploadIntervalMilliseconds = 5000)
         {
+            if (string.IsNullOrEmpty(serviceCredentialsFileName))
+            {
+                throw new ArgumentException("The file path is required", nameof(serviceCredentialsFileName));
+            }
+            if (string.IsNullOrEmpty(projectId))
+            {
+                throw new ArgumentException("The project id is required", nameof(projectId));
+            }
+            if (string.IsNullOrEmpty(topicId))
+            {
+                throw new ArgumentException("The topic id is required", nameof(topicId));
+            }
             this.serviceCredentialsFileName = serviceCredentialsFileName;
             this.projectId = projectId;
             this.topicId = topicId;
+            this.access = access;
             this.batchSize = batchSize;
             uploadInterval = TimeSpan.FromMilliseconds(uploadIntervalMilliseconds);
         }
 
         public async Task Run()
         {
-            var access = MidiAccessManager.Default;
             var pubSub = new PublisherClient(projectId, topicId,serviceCredentialsFileName);
             bool isVerbose = true;
 

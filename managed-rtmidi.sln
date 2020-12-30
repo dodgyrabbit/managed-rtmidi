@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dodgyrabbit.Google.Cloud.Pu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cloud-function", "cloud-function\cloud-function.csproj", "{DA746209-D672-45EC-999C-4137A671FDDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "midi-filter-tests", "examples\midi-filter-tests\midi-filter-tests.csproj", "{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,5 +88,17 @@ Global
 		{DA746209-D672-45EC-999C-4137A671FDDD}.Release|x64.Build.0 = Release|Any CPU
 		{DA746209-D672-45EC-999C-4137A671FDDD}.Release|x86.ActiveCfg = Release|Any CPU
 		{DA746209-D672-45EC-999C-4137A671FDDD}.Release|x86.Build.0 = Release|Any CPU
+		{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}.Debug|x64.Build.0 = Debug|Any CPU
+		{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}.Debug|x86.Build.0 = Debug|Any CPU
+		{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}.Release|x64.ActiveCfg = Release|Any CPU
+		{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}.Release|x64.Build.0 = Release|Any CPU
+		{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}.Release|x86.ActiveCfg = Release|Any CPU
+		{F982737F-1DFB-4B67-9FD6-D443A6ED31C3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

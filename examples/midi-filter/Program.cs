@@ -15,7 +15,7 @@ namespace midi_filter
     {
         static async Task Main(string[] args)
         {
-            await new Application("", "cloud-piano", "notes").Run();
+            await new Application("", "", "", MidiAccessManager.Default).Run();
         }
     }
 }
