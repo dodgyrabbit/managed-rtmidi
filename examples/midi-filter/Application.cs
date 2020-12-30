@@ -14,7 +14,11 @@ namespace midi_filter
     {
         // Search for a midi input device containing this string
         static string[] MidiInputDeviceNames = {"VMPK Output", "mio"};
-
+        static JsonSerializerOptions serializerOptions = new JsonSerializerOptions
+                {
+                    WriteIndented = false,
+                    IgnoreNullValues = true
+                };
         string projectId;
         string topicId;
         string serviceCredentialsFileName;
@@ -37,12 +41,6 @@ namespace midi_filter
             this.batchSize = batchSize;
             uploadInterval = TimeSpan.FromMilliseconds(uploadIntervalMilliseconds);
         }
-        
-        static JsonSerializerOptions serializerOptions = new JsonSerializerOptions
-        {
-            WriteIndented = false,
-            IgnoreNullValues = true
-        };
 
         public async Task Run()
         {
@@ -75,7 +73,6 @@ namespace midi_filter
             
             var portCreator = access.ExtensionManager.GetInstance<MidiPortCreatorExtension> ();
             var sender = portCreator.CreateVirtualInputSender(new MidiPortCreatorExtension.PortCreatorContext() {PortName = "Filtered Output"});
-            var uploadBatchTime = TimeSpan.FromSeconds(1);
             
             PubSubPublishParameters parameters = new PubSubPublishParameters();
             parameters.Messages = new List<PubSubMessage>();
@@ -110,7 +107,7 @@ namespace midi_filter
                             Console.WriteLine("Fail.");
                         }
                     }
-                    await Task.Delay(uploadBatchTime);
+                    await Task.Delay(uploadInterval);
                 }
             });
 
@@ -131,13 +128,13 @@ namespace midi_filter
 
                     byte statusByte = e.Data[0];
                     
-                    // Is it a status byte?
-                    if ((statusByte & 0xF0) > 0)
+                    // Reality check - is the high bit set? Status bytes starts with
+                    if ((statusByte & 0b1000_0000) > 0)
                     {
                         MidiEventType eventType = MidiEvent.ToMidiEventType(statusByte);
                         if (eventType == MidiEventType.NoteOn || eventType == MidiEventType.NoteOff)
                         {
-                            var note = new NoteMidiEvent(DateTime.UtcNow, MidiEvent.ToMidiEventType(statusByte), ChannelMidiEvent.ToChannel(statusByte),e.Data[1], e.Data[2]);
+                            var note = new NoteMidiEvent(DateTime.UtcNow, eventType, ChannelMidiEvent.ToChannel(statusByte),e.Data[1], e.Data[2]);
                             if (note.IsNoteOn && note.Velocity == 0)
                             {
                                 if (isVerbose)
@@ -146,12 +143,10 @@ namespace midi_filter
                                 }
                                 return;
                             }
-
                             if (isVerbose)
                             {
                                 Console.WriteLine($"{note.SPN} at velocity {note.Velocity} on channel {note.Channel} is {note.IsNoteOn}");
                             }
-
                             await writer.WriteAsync(note);
                         }
                     }
