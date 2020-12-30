@@ -222,7 +222,7 @@ namespace midi_filter
                     // This will allow the writer task to gracefully exit
                     channel.Writer.Complete();
                 }
-            });
+            }).Wait();
 
             await consumer;
             Console.WriteLine("Consumer exited");    
