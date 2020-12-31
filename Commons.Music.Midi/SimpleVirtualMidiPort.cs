@@ -20,18 +20,22 @@ namespace Commons.Music.Midi
 		
         public MidiPortConnectionState Connection => connection;
 
-        public Task CloseAsync ()
+        public Task CloseAsync()
         {
-            return Task.Run (() => {
+            return Task.Run(() =>
+            {
                 if (on_dispose != null)
-                    on_dispose ();
+                {
+                    on_dispose();
+                }
+
                 connection = MidiPortConnectionState.Closed;
             });
         }
 
-        public void Dispose ()
+        public void Dispose()
         {
-            CloseAsync ().Wait ();
+            CloseAsync().Wait();
         }
     }
 }

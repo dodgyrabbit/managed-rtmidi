@@ -8,7 +8,7 @@ namespace Commons.Music.Midi.RtMidi
         static readonly RtMidiInputDevice manager_input = new RtMidiInputDevice ();
 		
         // OK, it is not really a device count. But RTMIDI is designed to have bad names enough
-        // to enumerate APIs as DEVICEs.
+        // to enumerate APIs as devices.
         public static int DeviceCount => manager_input.PortCount + manager_output.PortCount;
 
         public static int DefaultInputDeviceID => 0;

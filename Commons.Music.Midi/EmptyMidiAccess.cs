@@ -40,8 +40,6 @@ namespace Commons.Music.Midi
 	        return Task.FromResult<IMidiOutput> (EmptyMidiOutput.Instance);
         }
 
-#pragma warning disable 0067
-        // it will never be fired.
         public event EventHandler<MidiConnectionEventArgs> StateChanged;
         
         public MidiAccessExtensionManager ExtensionManager { get; private set; }
@@ -84,7 +82,10 @@ namespace Commons.Music.Midi
 				var details = new EmptyMidiPortDetails("id", context.PortName);
 				return new SimpleVirtualMidiOutput(details, () => output.Dispose())
 				{
-					OnSend = (buffer, index, length, timestamp) => output.Send(buffer, index, length, timestamp)
+					OnSend = (buffer, index, length, timestamp) =>
+					{
+						output.Send(buffer, index, length, timestamp);
+					}
 				};
 			}
 

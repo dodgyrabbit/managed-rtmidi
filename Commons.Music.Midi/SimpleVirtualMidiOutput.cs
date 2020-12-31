@@ -14,7 +14,9 @@ namespace Commons.Music.Midi
         public void Send (byte [] mevent, int offset, int length, long timestamp)
         {
             if (OnSend != null)
-                OnSend (mevent, offset, length, timestamp);
+            {
+                OnSend(mevent, offset, length, timestamp);
+            }
         }
     }
 }

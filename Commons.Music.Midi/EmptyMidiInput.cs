@@ -2,7 +2,7 @@ using System;
 
 namespace Commons.Music.Midi
 {
-    class EmptyMidiInput : EmptyMidiPort, IMidiInput
+    class EmptyMidiInput : EmptyMidiPort, IMidiInput, IMockMidiInput
     {
         static EmptyMidiInput ()
         {
@@ -11,14 +11,16 @@ namespace Commons.Music.Midi
 
         public static EmptyMidiInput Instance { get; private set; }
 
-#pragma warning disable 0067
-        // will never be fired.
         public event EventHandler<MidiReceivedEventArgs> MessageReceived;
-#pragma warning restore 0067
 
         internal override IMidiPortDetails CreateDetails ()
         {
             return new EmptyMidiPortDetails ("dummy_in", "Dummy MIDI Input");
+        }
+
+        public void MockMessageReceived(byte[] bytes, int offset, int length, long timestamp)
+        {
+            MessageReceived (this, new MidiReceivedEventArgs { Data = bytes, Start = 0, Length = bytes.Length, Timestamp = (long) timestamp });
         }
     }
 }
