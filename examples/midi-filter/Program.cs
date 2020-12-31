@@ -27,7 +27,8 @@ namespace midi_filter
                 });
 
                 var pubSub = new PublisherClient("", "", "");
-                var application = new Application(pubSub, MidiAccessManager.Default);
+                var midiPublisher = new MidiPublisher(cts, pubSub);
+                var application = new Application(MidiAccessManager.Default, midiPublisher);
 
                 application.PrintMidiInputDevices();
 
