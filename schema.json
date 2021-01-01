@@ -1,0 +1,44 @@
+[
+    {
+        "description": "Timestamp when the event occurred. Partition key.",
+        "name": "timestamp",
+        "type": "TIMESTAMP",
+        "mode": "REQUIRED"
+    },
+    {
+        "description": "The unique tenant ID.",
+        "name": "tenant",
+        "type": "STRING",
+        "mode": "REQUIRED"
+    },
+    {
+        "description": "The unique device ID.",
+        "name": "device",
+        "type": "STRING",
+        "mode": "REQUIRED"
+    },
+    {
+        "description": "The MIDI event type triggering this event.",
+        "name": "eventtype",
+        "type": "INTEGER",
+        "mode": "REQUIRED"
+    },
+    {
+        "description": "A value associated with the MIDI event.",
+        "name": "value1",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+    },
+    {
+        "description": "A value associated with the MIDI event.",
+        "name": "value2",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+    },
+    {
+        "description": "A description associated with the MIDI event.",
+        "name": "description1",
+        "type": "STRING",
+        "mode": "NULLABLE"
+    }
+] 

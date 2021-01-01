@@ -48,26 +48,36 @@ namespace midi_filter
         public Task Publish()
         {
             PubSubPublishParameters parameters = new PubSubPublishParameters {Messages = new List<PubSubMessage>()};
+            MidiEventBatch midiEventBatch = new MidiEventBatch {Notes = new List<NoteMidiEvent>(), ControlChanges = new List<ControlChangeMidiEvent>(), Device = "1", Tenant = "1"};
 
             return Task.Run(async () =>
             {
                 while (await reader.WaitToReadAsync())
                 {
                     parameters.Messages.Clear();
+                    midiEventBatch.Notes.Clear();
+                    midiEventBatch.ControlChanges.Clear();
                     while (reader.TryRead(out var midiEvent))
                     {
                         if (midiEvent is NoteMidiEvent note)
                         {
-                            var message = new PubSubMessage();
-                            var serializedValue = JsonSerializer.Serialize(note, serializerOptions);
-                            message.Data = Convert.ToBase64String(Encoding.UTF8.GetBytes(serializedValue));
-                            parameters.Messages.Add(message);
+                            midiEventBatch.Notes.Add(note);
+                        }
+
+                        if (midiEvent is ControlChangeMidiEvent controlChange)
+                        {
+                            midiEventBatch.ControlChanges.Add(controlChange);
                         }
                     }
+                    
+                    var message = new PubSubMessage();
+                    var serializedValue = JsonSerializer.Serialize(midiEventBatch, serializerOptions);
+                    message.Data = Convert.ToBase64String(Encoding.UTF8.GetBytes(serializedValue));
+                    parameters.Messages.Add(message);
 
                     if (parameters.Messages.Count > 0)
                     {
-                        Console.WriteLine($"Uploading: {parameters.Messages.Count} MIDI events");
+                        Console.WriteLine($"Uploading {midiEventBatch.Notes.Count} notes and {midiEventBatch.ControlChanges.Count} pedal events");
                         try
                         {
                             var isUploaded = await publisherClient.PublishAsync(parameters);

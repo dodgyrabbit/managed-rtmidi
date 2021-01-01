@@ -16,6 +16,9 @@
     <Compile Include="..\Commons.Music.Midi\Events\ChannelMidiEvent.cs">
       <Link>ChannelMidiEvent.cs</Link>
     </Compile>
+    <Compile Include="..\Commons.Music.Midi\Events\ControlChangeMidiEvent.cs">
+      <Link>ControlChangeMidiEvent.cs</Link>
+    </Compile>
     <Compile Include="..\Commons.Music.Midi\Events\MidiEvent.cs">
       <Link>MidiEvent.cs</Link>
     </Compile>
@@ -24,6 +27,9 @@
     </Compile>
     <Compile Include="..\Commons.Music.Midi\Events\NoteMidiEvent.cs">
       <Link>NoteMidiEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\examples\midi-filter\MidiEventBatch.cs">
+      <Link>MidiEventBatch.cs</Link>
     </Compile>
   </ItemGroup>
 </Project>

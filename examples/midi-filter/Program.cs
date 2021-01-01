@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Commons.Music.Midi;
@@ -11,6 +12,8 @@ namespace midi_filter
         // ReSharper disable once UnusedParameter.Local
         static async Task Main(string[] args)
         {
+            var devices = new[] {"VMPK", "mio"};
+
             using CancellationTokenSource cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
@@ -37,10 +40,11 @@ namespace midi_filter
 
             Console.WriteLine("Press <ctrl>+c to exit");
             Console.WriteLine("Searching for MIDI input device...");
-            IMidiPortDetails details;
+            IMidiPortDetails details =  null;
             do
             {
-                details = await application.TryOpenMidiAsync("VMPK");
+                details = await TryOpenMidiDeviceAsync(application, devices);
+
                 if (details is not null)
                 {
                     Console.WriteLine($"Found {details.Name}");
@@ -69,6 +73,21 @@ namespace midi_filter
                     // Expected if the user cancels with <ctrl>+c
                 }
             }
+        }
+
+        static async Task<IMidiPortDetails> TryOpenMidiDeviceAsync(Application application, string[] devices)
+        {
+            IMidiPortDetails details = null;
+            foreach (var device in devices)
+            {
+                details = await application.TryOpenMidiAsync(device);
+                if (details != null)
+                {
+                    break;
+                }
+            }
+
+            return details;
         }
     }
 }

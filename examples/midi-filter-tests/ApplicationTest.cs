@@ -27,7 +27,7 @@ namespace midi_filter_tests
             MidiPublisher midiPublisher = new MidiPublisher(cts, publisherClient.Object);
             
             var app = new Application(new EmptyMidiAccess(), midiPublisher);
-            app.TryOpenMidiAsync("Dummy");
+            await app.TryOpenMidiAsync("Dummy");
 
             var theApp = app.Run(cts);
 

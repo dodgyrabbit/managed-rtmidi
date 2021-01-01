@@ -34,6 +34,11 @@ namespace midi_filter
 
                     return note;
                 }
+                if (eventType == MidiEventType.CC)
+                {
+                    var controlChange = new ControlChangeMidiEvent(DateTime.UtcNow, eventType, ChannelMidiEvent.ToChannel(statusByte), data[1], data[2]);
+                    return controlChange;
+                }
             }
 
             return null;
