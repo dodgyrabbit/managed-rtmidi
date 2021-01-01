@@ -10,22 +10,26 @@ using Dodgyrabbit.Google.Cloud.PubSub.V1;
 namespace midi_filter
 {
     /// <summary>
-    /// Publishes MIDI events to a PubSub topic.
+    /// Publishes MIDI events to a PubSub topic. Handles periodic uploading/batching.
     /// </summary>
     public class MidiPublisher
     {   
-        static JsonSerializerOptions serializerOptions = new JsonSerializerOptions
+        static readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions
         {
             WriteIndented = false,
             IgnoreNullValues = true
         };
-        int batchSize;
-        IPublisherClient publisherClient;
-        TimeSpan uploadInterval;
-        Channel<MidiEvent> channel = Channel.CreateUnbounded<MidiEvent>();
-        ChannelReader<MidiEvent> reader;
-        ChannelWriter<MidiEvent> writer;
-        CancellationTokenSource cts;
+        readonly int batchSize;
+        readonly IPublisherClient publisherClient;
+        readonly TimeSpan uploadInterval;
+
+        readonly Channel<MidiEvent> channel = Channel.CreateUnbounded<MidiEvent>(new UnboundedChannelOptions
+        {
+            SingleReader = true
+        });
+        readonly ChannelReader<MidiEvent> reader;
+        readonly ChannelWriter<MidiEvent> writer;
+        readonly CancellationTokenSource cts;
 
         public MidiPublisher(CancellationTokenSource cts, IPublisherClient publisherClient, int batchSize = 10, long uploadIntervalMilliseconds = 5000)
         {
@@ -34,6 +38,7 @@ namespace midi_filter
             uploadInterval = TimeSpan.FromMilliseconds(uploadIntervalMilliseconds);
             reader = channel.Reader;
             writer = channel.Writer;
+            // TODO: Better to hide this CTS and have a private one when channel is completed?
             this.cts = cts;
         }
 
@@ -42,19 +47,16 @@ namespace midi_filter
         /// </summary>
         public Task Publish()
         {
-            PubSubPublishParameters parameters = new PubSubPublishParameters();
-            parameters.Messages = new List<PubSubMessage>();
+            PubSubPublishParameters parameters = new PubSubPublishParameters {Messages = new List<PubSubMessage>()};
 
             return Task.Run(async () =>
             {
                 while (await reader.WaitToReadAsync())
                 {
                     parameters.Messages.Clear();
-                    MidiEvent midiEvent;
-                    while (reader.TryRead(out midiEvent))
+                    while (reader.TryRead(out var midiEvent))
                     {
-                        NoteMidiEvent note = midiEvent as NoteMidiEvent;
-                        if (note is not null)
+                        if (midiEvent is NoteMidiEvent note)
                         {
                             var message = new PubSubMessage();
                             var serializedValue = JsonSerializer.Serialize(note, serializerOptions);
@@ -66,10 +68,9 @@ namespace midi_filter
                     if (parameters.Messages.Count > 0)
                     {
                         Console.WriteLine($"Uploading: {parameters.Messages.Count} MIDI events");
-                        bool isUploaded;
                         try
                         {
-                            isUploaded = await publisherClient.PublishAsync(parameters);
+                            var isUploaded = await publisherClient.PublishAsync(parameters);
                             if (!isUploaded)
                             {
                                 Console.WriteLine("Failed to upload to PubSub without exception. Probably auth issue.");
@@ -85,7 +86,7 @@ namespace midi_filter
                     // we're done. This effectively means we're draining the queue without waiting when cancelling.
                     try
                     {
-                        await Task.Delay(uploadInterval, cts.Token);
+                        await Task.Delay(uploadInterval, cts.Token) ;
                     }
                     catch (TaskCanceledException)
                     {
@@ -94,11 +95,11 @@ namespace midi_filter
             });
         }
 
-        public ValueTask WriteAsync(MidiEvent midiEvent)
+        public bool TryWrite(MidiEvent midiEvent)
         {
             try
             {
-                return writer.WriteAsync(midiEvent);
+                return writer.TryWrite(midiEvent);
             }
             catch (ChannelClosedException)
             {
@@ -107,8 +108,9 @@ namespace midi_filter
                 {
                     throw;
                 }
+
+                return false;
             }
-            return ValueTask.FromCanceled(cts.Token);
         }
 
         public void Complete()
