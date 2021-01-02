@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Commons.Music.Midi;
@@ -31,14 +30,16 @@ namespace midi_filter_tests
 
             var theApp = app.Run(cts);
 
-            await Task.Delay(10);
-            
-            IMockMidiInput sender = input as IMockMidiInput;
-            sender.MockMessageReceived(new byte[] {0x90, 2, 3}, 0, 3, 0);
+            await Task.Delay(10, CancellationToken.None);
 
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            if (input is IMockMidiInput sender)
+            {
+                sender.MockMessageReceived(new byte[] {0x90, 2, 3}, 0, 3, 0);
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
             cts.Cancel();
-            theApp.Wait();
+            theApp.Wait(CancellationToken.None);
         }
         
         [Fact]

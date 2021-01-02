@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dodgyrabbit.Google.Cloud.PubSub.V1;
 using midi_filter;
-using Moq;
 using Xunit;
 
 namespace midi_filter_tests
@@ -16,11 +15,15 @@ namespace midi_filter_tests
         {
             using CancellationTokenSource cts = new CancellationTokenSource();
             MockPublisherClient publisherClient = new MockPublisherClient();
-            MidiPublisher midiPublisher = new MidiPublisher(cts, publisherClient);
+            MidiPublisher midiPublisher = new MidiPublisher(cts, publisherClient, 10, 1);
             Task publish = midiPublisher.Publish();
             midiPublisher.TryWrite(new NoteMidiEvent(DateTime.UtcNow, MidiEventType.NoteOn, 0, 1, 2));
             midiPublisher.TryWrite(new NoteMidiEvent(DateTime.UtcNow, MidiEventType.NoteOn, 0, 1, 2));
             var publishedValue = publisherClient.Dequeue(TimeSpan.FromSeconds(1));
+            Assert.Single(publishedValue.Messages);
+
+            midiPublisher.TryWrite(new ControlChangeMidiEvent(DateTime.UtcNow, MidiEventType.CC, 0, 1, 2));
+            publishedValue = publisherClient.Dequeue(TimeSpan.FromSeconds(1));
             Assert.Single(publishedValue.Messages);
             midiPublisher.Complete();
             cts.Cancel();
@@ -29,7 +32,7 @@ namespace midi_filter_tests
 
         class MockPublisherClient : IPublisherClient
         {
-            ConcurrentQueue<PubSubPublishParameters> values = new ConcurrentQueue<PubSubPublishParameters>();
+            readonly ConcurrentQueue<PubSubPublishParameters> values = new ConcurrentQueue<PubSubPublishParameters>();
 
             public PubSubPublishParameters Dequeue(TimeSpan timeout)
             {

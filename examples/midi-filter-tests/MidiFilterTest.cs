@@ -13,6 +13,13 @@ namespace midi_filter_tests
         }
         
         [Fact]
+        public void DontFilterControlChangeTest()
+        {
+            MidiEvent midiEvent = MidiFilter.Filter(new[] {(byte) MidiEventType.CC, (byte) 1, (byte) 2}, 0, 3, 0);
+            Assert.NotNull(midiEvent);
+        }
+        
+        [Fact]
         public void DontFilterNoteOffTest()
         {
             MidiEvent midiEvent = MidiFilter.Filter(new[] {(byte) MidiEventType.NoteOff, (byte) 1, (byte) 1}, 0, 3, 0);
